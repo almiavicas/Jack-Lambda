@@ -8,13 +8,23 @@ instance Show Palo where
     show Picas     = "\9828"
     show Corazones = "\9829"
 
-data Rango = N Int | Jack | Queen | King | Ace deriving Show
+data Rango = N Int | Jack | Queen | King | Ace
+
+instance Show Rango where
+    show (N a) = show a
+    show Jack  = "J"
+    show Queen = "Q"
+    show King  = "K"
+    show Ace   = "A"
 
 -- Notacion de registro
 data Carta = Carta {
     palo  :: Palo,
     rango :: Rango
-} deriving Show
+}
+
+instance Show Carta where
+    show Carta {palo = a, rango = b} = show a ++ show b
 
 data Jugador = Dealer | Player
 
