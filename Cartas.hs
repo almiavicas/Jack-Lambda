@@ -1,5 +1,14 @@
 import System.Random as Random
 
+-- -- -- -- -- -- Funciones Auxiliares -- -- -- -- -- --
+valorMano :: [Int] -> Int
+valorMano [] = 0
+valorMano valores
+    | sum valores > 21 = sum ([x | x <- valores, x < 11] ++ [1 | x <- valores, x >= 11])
+    | otherwise        = sum valores
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
 data Palo  = Treboles | Diamantes | Picas | Corazones
 
 instance Show Palo where
@@ -61,18 +70,19 @@ baraja = Mano [
 cantidad_cartas :: Mano -> Int
 cantidad_cartas (Mano (list)) = length list
 
+
+
 -- Recibe una mano y devuelve un entero con el valor de la misma
-valor :: Mano -> [Int] -> Int
-valor (Mano []) []                             = 0
-valor (Mano []) [valores]
-    | sum [valores] > 21                       = sum ([x | x <- [valores], x < 11] ++ [1 | x <- [valores], x == 11])
-    | otherwise                                = sum [valores]
-valor (Mano (Carta palo (N num):xs)) [valores] = valor (Mano xs) ([valores] ++ [num])
-valor (Mano (Carta palo rango:xs)) [valores]
-    | rango == Jack                            = valor (Mano xs) ([valores] ++ [10])
-    | rango == Queen                           = valor (Mano xs) ([valores] ++ [10])
-    | rango == King                            = valor (Mano xs) ([valores] ++ [10])
-    | otherwise                                = valor (Mano xs) ([valores] ++ [11])
+-- La funcion convierte cada carta al numero de su valor correspondiente
+-- Cuando termina de hacer esto, calcula la suma de los valores convertidos
+-- Si la suma excede 21, convierte el valor de aces de 11 a 1
+valor :: Mano -> Int
+valor (Mano []) = 0
+valor (Mano cartas) = valorMano $ valores where
+        valores = [num | Carta palo (N num) <- cartas]
+                    ++ [10 | Carta palo rango <- cartas, rango == Jack || rango == Queen || rango == King]
+                    ++ [11 | Carta palo rango <- cartas, rango == Ace]
+    
 
 
 -- -- Devuelve true si el valor de la mano excede 21, y False de otra forma
