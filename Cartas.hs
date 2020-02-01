@@ -2,7 +2,11 @@ import System.Random as Random
 
 data Palo  = Treboles | Diamantes | Picas | Corazones
 
-instance Show
+instance Show Palo where
+    show Treboles  = "\9827"
+    show Diamantes = "\9830"
+    show Picas     = "\9828"
+    show Corazones = "\9829"
 
 data Rango = N Int | Jack | Queen | King | Ace deriving Show
 
