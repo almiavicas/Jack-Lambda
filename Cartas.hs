@@ -50,8 +50,8 @@ baraja = Mano [
 -- Funciones de Acceso
 
 -- Determina la cantidad de cartas en una mano
--- cantidad_cartas :: Mano -> Int
--- cantidad_cartas (Mano (list)) = length list
+cantidad_cartas :: Mano -> Int
+cantidad_cartas (Mano (list)) = length list
 
 -- -- Recibe una mano y devuelve un entero con el valor de la misma
 -- valor :: Mano -> Int
