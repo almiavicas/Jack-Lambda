@@ -17,6 +17,14 @@ instance Show Rango where
     show King  = "K"
     show Ace   = "A"
 
+instance Eq Rango where
+    Jack == Jack = True
+    Queen == Queen = True
+    King == King = True
+    Ace == Ace = True
+    N a == N b = a == b
+    _ == _ = False
+
 -- Notacion de registro
 data Carta = Carta {
     palo  :: Palo,
@@ -53,9 +61,19 @@ baraja = Mano [
 cantidad_cartas :: Mano -> Int
 cantidad_cartas (Mano (list)) = length list
 
--- -- Recibe una mano y devuelve un entero con el valor de la misma
--- valor :: Mano -> Int
--- valor mano = 0
+-- Recibe una mano y devuelve un entero con el valor de la misma
+valor :: Mano -> [Int] -> Int
+valor (Mano []) []                             = 0
+valor (Mano []) [valores]
+    | sum [valores] > 21                       = sum ([x | x <- [valores], x < 11] ++ [1 | x <- [valores], x == 11])
+    | otherwise                                = sum [valores]
+valor (Mano (Carta palo (N num):xs)) [valores] = valor (Mano xs) ([valores] ++ [num])
+valor (Mano (Carta palo rango:xs)) [valores]
+    | rango == Jack                            = valor (Mano xs) ([valores] ++ [10])
+    | rango == Queen                           = valor (Mano xs) ([valores] ++ [10])
+    | rango == King                            = valor (Mano xs) ([valores] ++ [10])
+    | otherwise                                = valor (Mano xs) ([valores] ++ [11])
+
 
 -- -- Devuelve true si el valor de la mano excede 21, y False de otra forma
 -- busted :: Mano -> Bool
