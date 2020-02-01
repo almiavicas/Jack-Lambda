@@ -85,9 +85,9 @@ valor (Mano cartas) = valorMano $ valores where
     
 
 
--- -- Devuelve true si el valor de la mano excede 21, y False de otra forma
--- busted :: Mano -> Bool
--- busted mano = (valor mano) > 21
+-- Devuelve true si el valor de la mano excede 21, y False de otra forma
+busted :: Mano -> Bool
+busted (Mano cartas) = valor (Mano cartas) > 21
 
 -- -- Devuelve true si la mano es un blackjack y False de otra forma
 -- blackjack :: Mano -> Bool
