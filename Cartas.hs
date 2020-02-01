@@ -89,9 +89,9 @@ valor (Mano cartas) = valorMano $ valores where
 busted :: Mano -> Bool
 busted (Mano cartas) = valor (Mano cartas) > 21
 
--- -- Devuelve true si la mano es un blackjack y False de otra forma
--- blackjack :: Mano -> Bool
--- blackjack mano = False
+-- Devuelve true si la mano es un blackjack y False de otra forma
+blackjack :: Mano -> Bool
+blackjack (Mano cartas) = valor (Mano cartas) == 21 && cantidad_cartas (Mano cartas) == 2
 
 -- -- Recibe la mano del dealer primero, la mano del jugador de segundo y devuelve
 -- -- el ganador, segun las reglas del juego
