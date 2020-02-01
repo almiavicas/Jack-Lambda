@@ -111,8 +111,7 @@ ganador dealer player
 --   elemento de la mitad derecha, y r sera el resto de la mitad derecha
 separar :: Mano -> (Mano, Carta, Mano)
 separar (Mano cartas) = (\(left, (mid:right)) -> (Mano left, mid, Mano right))
-                        $ splitAt half cartas 
-                        where
+                        $ splitAt half cartas where
                             half = div (length cartas) 2
 
 -- -- Funciones de Modificacion
