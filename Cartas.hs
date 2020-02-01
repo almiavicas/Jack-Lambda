@@ -38,35 +38,14 @@ vacia :: Mano
 vacia = Mano []
 
 -- Produce una Mano que contenga las 52 cartas
--- Buscar listas de compresion IMPORTANTEEEEEEEEEEEEEEEEEEEE
 baraja :: Mano
 baraja = Mano [
             Carta {
-                palo  = Treboles,
-                rango = N 2
-                },
-            Carta {
-                palo  = Treboles,
-                rango = Jack
-                }
-            ]
--- baraja = Mano [Carta Treboles 2, Carta Treboles 3, Carta Treboles 4,
---           Carta Treboles 5, Carta Treboles 6, Carta Treboles 7,
---           Carta Treboles 8, Carta Treboles 9, Carta Treboles 10,
---           Carta Treboles Jack, Carta Treboles Queen, Carta Treboles King,
---           Carta Treboles Ace, Carta Diamantes 2, Carta Diamantes 3,
---           Carta Diamantes 4, Carta Diamantes 5, Carta Diamantes 6,
---           Carta Diamantes 7, Carta Diamantes 8, Carta Diamantes 9,
---           Carta Diamantes 10, Carta Diamantes Jack, Carta Diamantes Queen,
---           Carta Diamantes King, Carta Diamantes Ace, Carta Picas 2,
---           Carta Picas 3, Carta Picas 4, Carta Picas 5, Carta Picas 6,
---           Carta Picas 7, Carta Picas 8, Carta Picas 9, Carta Picas 10,
---           Carta Picas Jack, Carta Picas Queen, Carta Picas King,
---           Carta Picas Ace, Carta Corazones 2, Carta Corazones 4,
---           Carta Corazones 3, Carta Corazones 5, Carta Corazones 6,
---           Carta Corazones 7, Carta Corazones 8, Carta Corazones 9,
---           Carta Corazones 10, Carta Corazones Jack, Carta Corazones Queen,
---           Carta Corazones King, Carta Corazones Ace]
+                palo  = x,
+                rango = y
+            } | x <- [Treboles, Diamantes, Picas, Corazones],
+                y <- [N z | z <- [2..10]] ++ [Jack, Queen, King, Ace]
+        ]
 
 -- Funciones de Acceso
 
