@@ -1,4 +1,5 @@
-import System.Random as Random
+import qualified System.Random as Random
+import Data.List (splitAt)
 
 -- -- -- -- -- -- Funciones Auxiliares -- -- -- -- -- --
 valorMano :: [Int] -> Int
@@ -103,13 +104,16 @@ ganador dealer player
     | valor dealer >= valor player = Dealer
     | otherwise                    = Player
 
--- -- Recibe una mano y la separa en una tupla (l, c, r) de la siguiente manera:
--- -- - Si la mano es de longitud impar, c sera el elemento medio de la lista, y
--- --   l, r seran respectivamente las mitades izquierda y derecha restantes.
--- -- - Si la mano es de longitud par, l sera la mitad izquierda, c sera el primer
--- --   elemento de la mitad derecha, y r sera el resto de la mitad derecha
--- separar :: Mano -> (Mano, Carta, Mano)
--- separar mano = (Mano [], Carta Picas Ace, Mano [])
+-- Recibe una mano y la separa en una tupla (l, c, r) de la siguiente manera:
+-- - Si la mano es de longitud impar, c sera el elemento medio de la lista, y
+--   l, r seran respectivamente las mitades izquierda y derecha restantes.
+-- - Si la mano es de longitud par, l sera la mitad izquierda, c sera el primer
+--   elemento de la mitad derecha, y r sera el resto de la mitad derecha
+separar :: Mano -> (Mano, Carta, Mano)
+separar (Mano cartas) = (\(left, (mid:right)) -> (Mano left, mid, Mano right))
+                        $ splitAt half cartas 
+                        where
+                            half = div (length cartas) 2
 
 -- -- Funciones de Modificacion
 
