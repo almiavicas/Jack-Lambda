@@ -87,16 +87,21 @@ valor (Mano cartas) = valorMano $ valores where
 
 -- Devuelve true si el valor de la mano excede 21, y False de otra forma
 busted :: Mano -> Bool
-busted (Mano cartas) = valor (Mano cartas) > 21
+busted mano = valor mano > 21
 
 -- Devuelve true si la mano es un blackjack y False de otra forma
 blackjack :: Mano -> Bool
-blackjack (Mano cartas) = valor (Mano cartas) == 21 && cantidad_cartas (Mano cartas) == 2
+blackjack mano = valor mano == 21 && cantidad_cartas mano == 2
 
--- -- Recibe la mano del dealer primero, la mano del jugador de segundo y devuelve
--- -- el ganador, segun las reglas del juego
--- ganador :: Mano -> Mano -> Jugador
--- ganador dealer player = Player
+-- Recibe la mano del dealer primero, la mano del jugador de segundo y devuelve
+-- el ganador, segun las reglas del juego
+ganador :: Mano -> Mano -> Jugador
+ganador dealer player
+    | busted player                = Dealer
+    | blackjack dealer             = Dealer
+    | busted dealer                = Player
+    | valor dealer >= valor player = Dealer
+    | otherwise                    = Player
 
 -- -- Recibe una mano y la separa en una tupla (l, c, r) de la siguiente manera:
 -- -- - Si la mano es de longitud impar, c sera el elemento medio de la lista, y
