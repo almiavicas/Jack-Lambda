@@ -185,12 +185,13 @@ puedePicar :: Mazo -> Bool
 puedePicar (Mitad _ mazoLeft mazoRight) = (mazoLeft /= Vacio) && (mazoRight /= Vacio)
 puedePicar vacio                        = vacio == Vacio
 
--- -- Funciones de Modificacion
+-- Funciones de Modificacion
 
--- -- Recibe un Mazo y produce una Mano tal que si se le aplicara desdeLista,
--- -- deberia producir el mismo Mazo
--- aplanar :: Mazo -> Mano
--- aplanar mazo = Mano []
+-- Recibe un Mazo y produce una Mano tal que si se le aplicara desdeLista,
+-- deberia producir el mismo Mazo
+aplanar :: Mazo -> Mano
+aplanar (Mitad carta mLeft mRight) = combinarMano (combinarMano (aplanar mLeft) (Mano [carta])) (aplanar mRight)
+aplanar _                          = Mano []
 
 -- -- Recibe el Mazo original y una Mano con las cartas jugadas en la ronda. Debe
 -- -- eliminar todas las cartas jugadas del Mazo, y luego debe reconstruirlo,
