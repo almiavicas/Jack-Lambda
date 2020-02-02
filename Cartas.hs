@@ -1,18 +1,7 @@
 import qualified System.Random as Random
 import Data.List (splitAt)
 
--- -- -- -- -- -- Funciones Auxiliares -- -- -- -- -- --
-valorMano :: [Int] -> Int
-valorMano [] = 0
-valorMano valores
-    | sum valores > 21 = sum ([x | x <- valores, x < 11] ++ [1 | x <- valores, x >= 11])
-    | otherwise        = sum valores
 
-
-combinarMano :: Mano -> Mano -> Mano
-combinarMano (Mano a) (Mano b) = Mano (a ++ b)
-
--- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
 data Palo  = Treboles | Diamantes | Picas | Corazones
 
@@ -52,6 +41,26 @@ data Jugador = Dealer | Player
 
 -- Como data pero 1 solo tipo algebraico
 newtype Mano = Mano [Carta] deriving Show
+
+-- -- -- -- -- -- Funciones Auxiliares -- -- -- -- -- --
+valorMano :: [Int] -> Int
+valorMano [] = 0
+valorMano valores
+    | sum valores > 21 = sum ([x | x <- valores, x < 11] ++ [1 | x <- valores, x >= 11])
+    | otherwise        = sum valores
+
+
+combinarMano :: Mano -> Mano -> Mano
+combinarMano (Mano a) (Mano b) = Mano (a ++ b)
+
+
+separarRecursivo :: (Mano, Carta, Mano) -> Mazo
+separarRecursivo ((Mano []), carta, (Mano []))    = Mitad carta Vacio Vacio
+separarRecursivo ((manoLeft), carta, (Mano []))   = Mitad carta (separarRecursivo $ separar manoLeft) Vacio
+separarRecursivo ((Mano []), carta, (manoRight))  = Mitad carta Vacio (separarRecursivo $ separar manoRight)
+separarRecursivo ((manoLeft), carta, (manoRight)) = Mitad carta (separarRecursivo $ separar manoLeft) (separarRecursivo $ separar manoRight)
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
 -- Funciones de Construccion
 
@@ -141,18 +150,18 @@ inicialLambda :: Mano -> (Mano, Mano)
 inicialLambda (Mano cartas) = (\(left, right) -> (Mano left, Mano right))
                             $ splitAt 2 cartas
 
--- data Mazo = Vacio | Mitad Carta Mazo Mazo
+data Mazo = Vacio | Mitad Carta Mazo Mazo
 
--- data Eleccion = Izquierdo | Derecho
+data Eleccion = Izquierdo | Derecho
 
--- -- Funciones de Construccion
-
--- -- Recibe una Mano y produce un Mazo. El mazo generado debe ser un arbol
--- -- binario balanceado por altura. El arbol construido es tal que su recorrido
--- -- inorden forme la Mano usada para construirlo. Una de las funciones
--- -- propuestas de Mano es util para esto
--- desdeMano :: Mano -> Mazo
--- desdeMano mano = Vacio
+-- Funciones de Construccion
+-- 
+-- Recibe una Mano y produce un Mazo. El mazo generado debe ser un arbol
+-- binario balanceado por altura. El arbol construido es tal que su recorrido
+-- inorden forme la Mano usada para construirlo. Una de las funciones
+-- propuestas de Mano es util para esto
+desdeMano :: Mano -> Mazo
+desdeMano mano = separarRecursivo $ separar mano
 
 -- -- Funciones de Acceso
 
