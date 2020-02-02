@@ -11,6 +11,13 @@ instance Show Palo where
     show Picas     = "\9828"
     show Corazones = "\9829"
 
+instance Eq Palo where
+    Treboles == Treboles   = True
+    Diamantes == Diamantes = True
+    Picas == Picas         = True
+    Corazones == Corazones = True
+    _ == _                 = False
+
 data Rango = N Int | Jack | Queen | King | Ace
 
 instance Show Rango where
@@ -21,12 +28,12 @@ instance Show Rango where
     show Ace   = "A"
 
 instance Eq Rango where
-    Jack == Jack = True
+    Jack == Jack   = True
     Queen == Queen = True
-    King == King = True
-    Ace == Ace = True
-    N a == N b = a == b
-    _ == _ = False
+    King == King   = True
+    Ace == Ace     = True
+    N a == N b     = a == b
+    _ == _         = False
 
 -- Notacion de registro
 data Carta = Carta {
@@ -36,6 +43,9 @@ data Carta = Carta {
 
 instance Show Carta where
     show Carta {palo = a, rango = b} = show a ++ show b
+
+instance Eq Carta where
+    Carta paloA rangoA == Carta paloB rangoB = (paloA == paloB) && (rangoA == rangoB)
 
 data Jugador = Dealer | Player
 
@@ -152,6 +162,10 @@ inicialLambda (Mano cartas) = (\(left, right) -> (Mano left, Mano right))
 
 data Mazo = Vacio | Mitad Carta Mazo Mazo
 
+instance Eq Mazo where
+    Vacio == Vacio = True
+    _ == _         = False
+
 data Eleccion = Izquierdo | Derecho
 
 -- Funciones de Construccion
@@ -163,12 +177,13 @@ data Eleccion = Izquierdo | Derecho
 desdeMano :: Mano -> Mazo
 desdeMano mano = separarRecursivo $ separar mano
 
--- -- Funciones de Acceso
+-- Funciones de Acceso
 
--- -- Recibe un mazo y devuelve True si no es vacio y ninguno de sus hijos es
--- -- vacio
--- puedePicar :: Mazo -> Bool
--- puedePicar mazo = False
+-- Recibe un mazo y devuelve True si no es vacio y ninguno de sus hijos es
+-- vacio
+puedePicar :: Mazo -> Bool
+puedePicar (Mitad _ mazoLeft mazoRight) = (mazoLeft /= Vacio) && (mazoRight /= Vacio)
+puedePicar vacio                        = vacio == Vacio
 
 -- -- Funciones de Modificacion
 
