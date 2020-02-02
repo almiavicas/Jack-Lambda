@@ -8,6 +8,10 @@ valorMano valores
     | sum valores > 21 = sum ([x | x <- valores, x < 11] ++ [1 | x <- valores, x >= 11])
     | otherwise        = sum valores
 
+
+combinarMano :: Mano -> Mano -> Mano
+combinarMano (Mano a) (Mano b) = Mano (a ++ b)
+
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
 data Palo  = Treboles | Diamantes | Picas | Corazones
@@ -110,25 +114,32 @@ ganador dealer player
 -- - Si la mano es de longitud par, l sera la mitad izquierda, c sera el primer
 --   elemento de la mitad derecha, y r sera el resto de la mitad derecha
 separar :: Mano -> (Mano, Carta, Mano)
-separar (Mano cartas) = (\(left, (mid:right)) -> (Mano left, mid, Mano right))
+separar (Mano cartas) = (\(left, mid:right) -> (Mano left, mid, Mano right))
                         $ splitAt half cartas where
                             half = div (length cartas) 2
 
 -- -- Funciones de Modificacion
 
--- -- Esta funcion sera usada para barajar las cartas al inicio de cada ronda.
--- -- Para ello, es necesario el tipo de datos StdGen, incluido en el modulo
--- -- System.Random. El segundo argumento es la Mano a barajar, y debe devolverse
--- -- la mano ya barajada. Para ello, se debe empezar por una Mano vacia para
--- -- acumular
+-- Esta funcion sera usada para barajar las cartas al inicio de cada ronda.
+-- Para ello, es necesario el tipo de datos StdGen, incluido en el modulo
+-- System.Random. El segundo argumento es la Mano a barajar, y debe devolverse
+-- la mano ya barajada. Para ello, se debe empezar por una Mano vacia para
+-- acumular
 -- barajar :: Random.StdGen -> Mano -> Mano
--- barajar gen mano = Mano []
+-- barajar gen (Mano []) = Mano []
+-- barajar gen (Mano cartas) = (\newGen (left, x:right) -> combinarMano (Mano [x]) (barajar newGen (Mano (left ++ right))))
+--                             $ newGen splitAt index cartas
+--                             where
+--                                 let
+--                                     (escogido, newGen) = next gen
+--                                 in index = (mod escogido (length cartas)) + 1
 
--- -- Recibe la baraja inicial barajada como Mano, y devuelve la Mano inicial de
--- -- Lambda tomando las dos primeras cartas, y la baraja resultante de retirar
--- -- dichas cartas.
--- inicialLambda :: Mano -> (Mano, Mano)
--- inicialLambda mano = (Mano [], Mano [])
+-- Recibe la baraja inicial barajada como Mano, y devuelve la Mano inicial de
+-- Lambda tomando las dos primeras cartas, y la baraja resultante de retirar
+-- dichas cartas.
+inicialLambda :: Mano -> (Mano, Mano)
+inicialLambda (Mano cartas) = (\(left, right) -> (Mano left, Mano right))
+                            $ splitAt 2 cartas
 
 -- data Mazo = Vacio | Mitad Carta Mazo Mazo
 
