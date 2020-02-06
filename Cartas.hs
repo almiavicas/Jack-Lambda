@@ -49,10 +49,10 @@ instance Eq Carta where
 
 data Jugador = Dealer | Player
 
--- Como data pero 1 solo tipo algebraico
 newtype Mano = Mano [Carta] deriving Show
 
--- -- -- -- -- -- Funciones Auxiliares -- -- -- -- -- --
+
+-- -- -- -- -- -- Funciones Auxiliares -- -- -- -- -- -- -- -- -- -- -- -- --
 valorMano :: [Int] -> Int
 valorMano [] = 0
 valorMano valores
@@ -70,7 +70,17 @@ separarRecursivo ((manoLeft), carta, (Mano []))   = Mitad carta (separarRecursiv
 separarRecursivo ((Mano []), carta, (manoRight))  = Mitad carta Vacio (separarRecursivo $ separar manoRight)
 separarRecursivo ((manoLeft), carta, (manoRight)) = Mitad carta (separarRecursivo $ separar manoLeft) (separarRecursivo $ separar manoRight)
 
--- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+escogerPrimeras :: Mano -> Mano -> Maybe Mano
+escogerPrimeras (Mano []) manoJack
+    | valor manoJack >= 16 = Just manoJack
+    | otherwise            = Nothing
+escogerPrimeras (Mano (x:xs)) manoJack
+    | valor manoJack >= 16 = Just manoJack
+    | otherwise            = escogerPrimeras (Mano xs) (combinarMano manoJack (Mano [x]))
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
 
 -- Funciones de Construccion
 
@@ -160,6 +170,11 @@ inicialLambda :: Mano -> (Mano, Mano)
 inicialLambda (Mano cartas) = (\(left, right) -> (Mano left, Mano right))
                             $ splitAt 2 cartas
 
+
+
+
+
+
 data Mazo = Vacio | Mitad Carta Mazo Mazo
 
 instance Eq Mazo where
@@ -167,6 +182,11 @@ instance Eq Mazo where
     _ == _         = False
 
 data Eleccion = Izquierdo | Derecho
+
+instance Eq Eleccion where
+    Izquierdo == Izquierdo = True
+    Derecho == Derecho     = True
+    _ == _                 = False
 
 -- Funciones de Construccion
 -- 
@@ -193,21 +213,28 @@ aplanar :: Mazo -> Mano
 aplanar (Mitad carta mLeft mRight) = combinarMano (combinarMano (aplanar mLeft) (Mano [carta])) (aplanar mRight)
 aplanar _                          = Mano []
 
--- -- Recibe el Mazo original y una Mano con las cartas jugadas en la ronda. Debe
--- -- eliminar todas las cartas jugadas del Mazo, y luego debe reconstruirlo,
--- -- produciendo un Mazo que siga las mismas reglas de construcicion que
--- -- desdeMazo. 
--- reconstruir :: Mazo -> Mano -> Mazo
--- reconstruir mazo mano = mazo
+-- Recibe el Mazo original y una Mano con las cartas jugadas en la ronda. Debe
+-- eliminar todas las cartas jugadas del Mazo, y luego debe reconstruirlo,
+-- produciendo un Mazo que siga las mismas reglas de construccion que
+-- desdeMano. 
+reconstruir :: Mazo -> Mano -> Mazo
+reconstruir mazo (Mano cartas) = desdeMano 
+                                $ (\(Mano aplanada) -> Mano [x | x <- aplanada, x `notElem` cartas]) 
+                                $ aplanar mazo
 
 -- -- Recibe el Mazo actual, la mano del jugador y una Eleccion. Debe devolver una
 -- -- tupla con el Mazo resultante (la eleccion indica que hijo del Mazo se usara)
 -- -- y la mano resultante. Devolvera Nothing si no quedan cartas que sacar (
 -- -- aunque esto no deba ocurrir)
--- -- robar :: Mazo -> Mano -> Eleccion -> Maybe (Mazo, Mano)
+robar :: Mazo -> Mano -> Eleccion -> Maybe (Mazo, Mano)
+robar (Mitad carta (Mitad cartaL ml1 ml2) (Mitad cartaR mr1 mr2)) (Mano cartas) eleccion
+    | eleccion == Izquierdo = Just (Mitad cartaL ml1 ml2, Mano (cartas ++ [cartaL]))
+    | otherwise             = Just (Mitad cartaR mr1 mr2, Mano (cartas ++ [cartaR]))
+robar _ _ _                 = Nothing
 
 -- -- Recibe el mazo actual, lo vuelve a convertir en una Mano en el orden
 -- -- apropiado, recibe la Mano del dealer, y devuelve la mano resultante de robar
 -- -- hasta que supere un valor de 16. Devolvera Nothing si no quedan cartas que
 -- -- sacar (aunque esto no deba ocurrir)
--- -- jugarLambda :: Mazo -> Mano -> Maybe Mano
+jugarLambda :: Mazo -> Mano -> Maybe Mano
+jugarLambda mazo manoJack = escogerPrimeras (aplanar mazo) manoJack
