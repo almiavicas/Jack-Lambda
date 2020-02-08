@@ -183,6 +183,10 @@ instance Eq Mazo where
     Vacio == Vacio = True
     _ == _         = False
 
+instance Show Mazo where
+    show Vacio             = ""
+    show (Mitad carta a b) = show a ++ show carta ++ show b
+
 data Eleccion = Izquierdo | Derecho
 
 instance Eq Eleccion where
