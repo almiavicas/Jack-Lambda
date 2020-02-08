@@ -185,7 +185,7 @@ instance Eq Mazo where
 
 instance Show Mazo where
     show Vacio             = ""
-    show (Mitad carta a b) = show a ++ show carta ++ show b
+    show (Mitad carta a b) = show carta ++ "(left " ++ show carta ++ ": " ++ show a ++ ", right " ++ show carta ++ ": " ++ show b ++ ")"
 
 data Eleccion = Izquierdo | Derecho
 
