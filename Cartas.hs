@@ -49,6 +49,10 @@ instance Eq Carta where
 
 data Jugador = Dealer | Player
 
+instance Show Jugador where
+    show Dealer = "Dealer"
+    show Player = "Player"
+
 newtype Mano = Mano [Carta] deriving Show
 
 
