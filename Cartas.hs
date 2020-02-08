@@ -147,6 +147,7 @@ ganador dealer player
 -- - Si la mano es de longitud par, l sera la mitad izquierda, c sera el primer
 --   elemento de la mitad derecha, y r sera el resto de la mitad derecha
 separar :: Mano -> (Mano, Carta, Mano)
+separar (Mano [])     = (Mano [], Carta Picas Ace, Mano [])
 separar (Mano cartas) = (\(left, mid:right) -> (Mano left, mid, Mano right))
                         $ splitAt half cartas where
                             half = div (length cartas) 2
