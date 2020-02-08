@@ -162,7 +162,7 @@ barajar :: Random.StdGen -> Mano -> Mano
 barajar gen (Mano []) = Mano []
 barajar gen (Mano cartas) = (\(newGen, (left, x:right)) -> combinarMano (Mano [x]) (barajar newGen (Mano (left ++ right))))
                             $ (\(newGen, indice) -> (newGen, splitAt indice cartas))
-                            $ (\(escogido, newGen) -> (newGen, (mod escogido (length cartas)) + 1))
+                            $ (\(escogido, newGen) -> (newGen, (mod escogido (length cartas))))
                             $ Random.next gen
 
 -- Recibe la baraja inicial barajada como Mano, y devuelve la Mano inicial de
