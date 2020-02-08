@@ -154,14 +154,12 @@ separar (Mano cartas) = (\(left, mid:right) -> (Mano left, mid, Mano right))
 -- System.Random. El segundo argumento es la Mano a barajar, y debe devolverse
 -- la mano ya barajada. Para ello, se debe empezar por una Mano vacia para
 -- acumular
--- barajar :: Random.StdGen -> Mano -> Mano
--- barajar gen (Mano []) = Mano []
--- barajar gen (Mano cartas) = (\newGen (left, x:right) -> combinarMano (Mano [x]) (barajar newGen (Mano (left ++ right))))
---                             $ newGen splitAt index cartas
---                             where
---                                 let
---                                     (escogido, newGen) = next gen
---                                 in index = (mod escogido (length cartas)) + 1
+barajar :: Random.StdGen -> Mano -> Mano
+barajar gen (Mano []) = Mano []
+barajar gen (Mano cartas) = (\(newGen, (left, x:right)) -> combinarMano (Mano [x]) (barajar newGen (Mano (left ++ right))))
+                            $ (\(newGen, indice) -> (newGen, splitAt indice cartas))
+                            $ (\(escogido, newGen) -> (newGen, (mod escogido (length cartas)) + 1))
+                            $ Random.next gen
 
 -- Recibe la baraja inicial barajada como Mano, y devuelve la Mano inicial de
 -- Lambda tomando las dos primeras cartas, y la baraja resultante de retirar
