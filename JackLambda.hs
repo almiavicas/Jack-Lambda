@@ -67,6 +67,8 @@ menu gs = do
                           putStrLn $ "Por favor, intenta de nuevo"
                           return gs
     gs <- gsBuilder
+    putStr "(Presiona enter para continuar!)"
+    a <- getLine
     menu gs
 
 -- Cuando no esta el archivo indicar que no existe
@@ -172,32 +174,40 @@ jugar_ronda GameState {
         let manoCompleta = barajar g (baraja)
             nuevo_dinero = d - a
         let (Mano manoJack, manoCompleta2) = inicialLambda manoCompleta
-        putStr $ "Jugador esta es mi primera carta: "
+        putStr $ n ++ "esta es mi primera carta: "
         putStrLn $ show (manoJack!!0)
         let (_, gen) = Random.split g
         if blackjack (Mano manoJack)
             then
                 do
-                putStrLn $ n ++ "Jugador, he sacado blackjack. Yo gano"
-                return GameState {
-                    juegosJugados   = jj + 1,
-                    victoriasLambda = vl + 1,
-                    nombre          = n,
-                    generador       = gen,
-                    dinero          = nuevo_dinero,
-                    objetivo        = o,
-                    apuesta         = a
-                }
-            else
-                return GameState {
-                    juegosJugados   = jj,
-                    victoriasLambda = vl,
-                    nombre          = n,
-                    generador       = gen,
-                    dinero          = d,
-                    objetivo        = o,
-                    apuesta         = a
+                putStrLn $ n ++ ", he sacado blackjack. Yo gano"
+                if nuevo_dinero < a
+                then
+                    do
+                        putStrLn n ++ ", no te queda dinero. Es el fin del juego para ti."
+                        Sys.exitSuccess
+                else
+                    return GameState {
+                        juegosJugados   = jj + 1,
+                        victoriasLambda = vl + 1,
+                        nombre          = n,
+                        generador       = gen,
+                        dinero          = nuevo_dinero,
+                        objetivo        = o,
+                        apuesta         = a
                     }
+            else
+                do
+                    let (Mitad carta mazo1 mazo2 ) = desdeMano manoCompleta2
+                    return GameState {
+                        juegosJugados   = jj,
+                        victoriasLambda = vl,
+                        nombre          = n,
+                        generador       = gen,
+                        dinero          = d,
+                        objetivo        = o,
+                        apuesta         = a
+                        }
 
 
 
