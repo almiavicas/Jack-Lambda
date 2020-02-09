@@ -1,4 +1,4 @@
-module Cartas where
+import Cartas
 import qualified System.Random as Random
 import System.IO  
 import Control.Monad  
@@ -42,23 +42,32 @@ main = do
                       "No" -> nueva_partida
                       "no" -> nueva_partida
     gs <- gsBuilder
+    
+    menu gs
+
+
+menu :: GameState -> IO ()
+menu gs = do
+    putStrLn $ ""
     putStrLn $ show gs
-    forever $ do 
-    putStr "Seleccione una opcion: " 
-    let a = "\n" ++ "1. Jugar ronda"  
-        b = "2. Guardar partida"  
-        c = "3. Cargar partida"
-        d = "4. Salir"
-    putStrLn $ a
-    putStrLn $ b
-    putStrLn $ c
-    putStrLn $ d    
+    putStrLn $ "Seleccione una opcion"
+    putStrLn $ "1. Jugar Ronda"
+    putStrLn $ "2. Guardar Partida"
+    putStrLn $ "3. Cargar Partida"
+    putStrLn $ "4. Salir"
     l <- getLine
-    case l of "1" -> print "cocacola"
-              --"2" -> print nuevo_juego
-            --   "3" -> cargar_partida
-              "4" -> Sys.exitSuccess
-              _   -> print "Intenta de nuevo"
+    let gsBuilder =
+            case l of "1" -> jugar_ronda gs
+                      "2" -> do
+                          guardar_partida gs
+                          return gs
+                      "3" -> cargar_partida
+                      "4" -> Sys.exitSuccess
+                      _   -> do
+                          putStrLn $ "Por favor, intenta de nuevo"
+                          return gs
+    gs <- gsBuilder
+    menu gs
 
 -- Cuando no esta el archivo indicar que no existe
 cargar_partida :: IO GameState
@@ -128,24 +137,69 @@ nueva_partida = do
         apuesta         = d
         }
     
+
+guardar_partida :: GameState -> IO GameState
+guardar_partida GameState { 
+    juegosJugados   = jj,
+    victoriasLambda = vl,
+    nombre          = n,
+    generador       = g,
+    dinero          = d,
+    objetivo        = o,
+    apuesta         = a
+    } = do
+        return GameState {
+            juegosJugados   = jj,
+            victoriasLambda = vl,
+            nombre          = n,
+            generador       = g,
+            dinero          = d,
+            objetivo        = o,
+            apuesta         = a
+            }
+
 -- Menu que aparece al empezar a jugar 
--- jugar_ronda =
---     forever $ do 
---     putStr "Empiezo el juego!" 
---     putStr "Que deseas hacer: "
---     let a = "\n" ++ "Hit"  
---         b = "2. Stand"  
---         c = "3. Doble Down"
---         d = "4. Surrender"
---     putStrLn $ a
---     putStrLn $ b
---     putStrLn $ c
---     putStrLn $ d
---     case l of "1" -> Hit 
---               --"2" -> Stand
---               "3" -> Doble Down
---               "4" -> Surrender
---               _   -> print "Intenta de nuevo"
+jugar_ronda :: GameState -> IO GameState
+jugar_ronda GameState { 
+    juegosJugados   = jj,
+    victoriasLambda = vl,
+    nombre          = n,
+    generador       = g,
+    dinero          = d,
+    objetivo        = o,
+    apuesta         = a
+    } = do
+        let manoCompleta = barajar g (baraja)
+            nuevo_dinero = d - a
+        let (Mano manoJack, manoCompleta2) = inicialLambda manoCompleta
+        putStr $ "Jugador esta es mi primera carta: "
+        putStrLn $ show (manoJack!!0)
+        let (_, gen) = Random.split g
+        if blackjack (Mano manoJack)
+            then
+                do
+                putStrLn $ n ++ "Jugador, he sacado blackjack. Yo gano"
+                return GameState {
+                    juegosJugados   = jj + 1,
+                    victoriasLambda = vl + 1,
+                    nombre          = n,
+                    generador       = gen,
+                    dinero          = nuevo_dinero,
+                    objetivo        = o,
+                    apuesta         = a
+                }
+            else
+                return GameState {
+                    juegosJugados   = jj,
+                    victoriasLambda = vl,
+                    nombre          = n,
+                    generador       = gen,
+                    dinero          = d,
+                    objetivo        = o,
+                    apuesta         = a
+                    }
+
+
 
 
 

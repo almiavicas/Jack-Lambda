@@ -1,3 +1,22 @@
+module Cartas (
+    Mano (..),
+    vacia,
+    baraja,
+    cantidad_cartas,
+    valor,
+    busted,
+    blackjack,
+    ganador,
+    separar,
+    barajar,
+    inicialLambda,
+    desdeMano,
+    puedePicar,
+    aplanar,
+    reconstruir,
+    robar,
+    jugarLambda,
+) where
 import qualified System.Random as Random
 import Data.List (splitAt)
 
