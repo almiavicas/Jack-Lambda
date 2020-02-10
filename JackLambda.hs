@@ -33,7 +33,7 @@ instance Show GameState where
 
 
 main :: IO ()
--- Ver si la persona quiere cargar una partida o es un nuevo usuario  
+-- Solicitar al usuario si desea cargar una partida  
 main = do  
     putStr "Desea cargar partida: Si o No "
     s <- getLine
@@ -46,7 +46,7 @@ main = do
     
     menu gs
 
-
+-- Menu con las primeras opciones
 menu :: GameState -> IO ()
 menu gs = do
     putStrLn $ ""
@@ -72,7 +72,7 @@ menu gs = do
     a <- getLine
     menu gs
 
--- Cuando no esta el archivo indicar que no existe
+-- Cargar el archvio con los datos de una partida
 cargar_partida :: IO GameState
 cargar_partida = do
     putStr "Coloque el nombre del archivo: "  
@@ -96,7 +96,7 @@ cargar_partida = do
         apuesta         = read f :: Int
         }
 
---Intento de ver como verifico que el monto incial es mayor a cero
+-- Se verifica que los montos cumplan con las restricciones mencionadas
 montoValido :: Int -> IO Int
 montoValido minimo = do
     valor <- getLine
@@ -117,8 +117,7 @@ montoMaximo mini maxi = do
             (montoMaximo mini maxi)
         else return parsed
 
--- Ver que el monto inciial es mayor a cero, ver que monto para ganar es mayor al inicial
--- ver que las acuertas sean menor igual al monto inicial pero mayor a 0
+-- Datos que se solician al usuario cuando no cargo una partida
 nueva_partida :: IO GameState
 nueva_partida = do
     putStr "Nombre del jugador: "
@@ -161,7 +160,12 @@ guardar_partida GameState {
             apuesta         = a
             }
 
--- Menu que aparece al empezar a jugar 
+-- Al empezar el juego se muestra la primera carta de Jack
+-- si hizo BJ o no. En caso de no gane, se le dan las cartas al jugador y se le indica
+-- de que parte del mazo sacar la proxima carta, s ve si gano y sino se dan las proximas
+-- acciones que puede realizar.
+-- Cada vez que se empieza una partida se aumentan los juegos jugados y se verifica si se 
+-- tiene la suficiente plata para apostar.
 jugar_ronda :: GameState -> IO GameState
 jugar_ronda GameState { 
     juegosJugados   = jj,
