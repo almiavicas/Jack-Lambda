@@ -1,5 +1,7 @@
 module Cartas (
     Mano (..),
+    Eleccion (..),
+    Mazo (..),
     vacia,
     baraja,
     cantidad_cartas,

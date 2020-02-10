@@ -31,6 +31,7 @@ instance Show GameState where
                 ++ show "Apuesta inicial: " ++ show g
                 )
 
+
 main :: IO ()
 -- Ver si la persona quiere cargar una partida o es un nuevo usuario  
 main = do  
@@ -178,38 +179,110 @@ jugar_ronda GameState {
         putStrLn $ show (manoJack!!0)
         let (_, gen) = Random.split g
         if blackjack (Mano manoJack)
-            then
-                do
-                putStrLn $ n ++ ", he sacado blackjack. Yo gano"
-                if nuevo_dinero < a
-                then
-                    do
-                        putStrLn n ++ ", no te queda dinero. Es el fin del juego para ti."
-                        Sys.exitSuccess
-                else
-                    return GameState {
-                        juegosJugados   = jj + 1,
-                        victoriasLambda = vl + 1,
-                        nombre          = n,
-                        generador       = gen,
-                        dinero          = nuevo_dinero,
-                        objetivo        = o,
-                        apuesta         = a
-                    }
+        then do
+            putStrLn $ n ++ ", he sacado blackjack. Yo gano"
+            if nuevo_dinero < a
+            then do
+                putStrLn $ n ++ ", no te queda dinero. Es el fin del juego para ti."
+                Sys.exitSuccess
             else
-                do
-                    let (Mitad carta mazo1 mazo2 ) = desdeMano manoCompleta2
-                    return GameState {
-                        juegosJugados   = jj,
-                        victoriasLambda = vl,
-                        nombre          = n,
-                        generador       = gen,
-                        dinero          = d,
-                        objetivo        = o,
-                        apuesta         = a
-                        }
+                return GameState {
+                    juegosJugados   = jj + 1,
+                    victoriasLambda = vl + 1,
+                    nombre          = n,
+                    generador       = gen,
+                    dinero          = nuevo_dinero,
+                    objetivo        = o,
+                    apuesta         = a
+                }
+        else do
+            let (Mitad carta mazo1 mazo2 ) = desdeMano manoCompleta2
+            let manoJugador = Mano [carta]
+            choice <- pedirLado n False
+            let Just (mazoResultado, manoJugador) = robar (Mitad carta mazo1 mazo2) manoJugador choice
+            mostrarMano n manoJugador
+            if blackjack manoJugador
+            then putStrLn $ n ++ ", tu mano es un blackjack"
+            else putStrLn $ "Suma " ++ show (valor manoJugador)
+            let money = nuevo_dinero
+                bid   = a
+            finalAcciones <- accion manoJugador mazoResultado n money bid
+
+            case finalAcciones of Nothing -> if nuevo_dinero < a
+                                             then do
+                                                 putStrLn $ n ++ ", no te queda dinero. es el fin del juego para ti."
+                                                 Sys.exitSuccess
+                                             else
+                                                return GameState {
+                                                        juegosJugados   = jj + 1,
+                                                        victoriasLambda = vl + 1,
+                                                        nombre          = n,
+                                                        generador       = gen,
+                                                        dinero          = nuevo_dinero,
+                                                        objetivo        = o,
+                                                        apuesta         = a
+                                                    }
+                                  _       -> do
+                                             let Just (manoFinalJugador, cartasRestantes, apuestaFinal) = finalAcciones
+                                             return GameState {
+                                                 juegosJugados   = jj,
+                                                 victoriasLambda = vl,
+                                                 nombre          = n,
+                                                 generador       = gen,
+                                                 dinero          = d,
+                                                 objetivo        = o,
+                                                 apuesta         = a
+                                                 }
 
 
+pedirLado :: String -> Bool -> IO Eleccion
+pedirLado n True
+    = do
+        putStrLn $ "Por favor, ingrese una opcion valida"
+        pedirLado n False
+pedirLado n False
+    = do
+        putStrLn $ n ++ ", ¿robarás de la izquierda o de la derecha?"
+        putStrLn $ "Izquierda (i)"
+        putStrLn $ "Derecha (d)"
+        putStrLn $ "Ingrese su opcion: "
+        choice <- getLine
+        if choice == "i" || choice == "I"
+        then return Izquierdo
+        else if choice == "d" || choice == "D"
+        then return Derecho
+        else pedirLado n True
+        
+mostrarMano :: String -> Mano -> IO ()
+mostrarMano n (Mano cartas) = putStrLn $ n ++ ", tu mano es " ++ show cartas
 
+accion :: Mano -> Mazo -> String -> Int -> Int -> IO (Maybe (Mano, Mano, Int))
+accion mano mazo id dinero apuesta = accion_aux mano mazo (Mano []) id dinero apuesta
 
+accion_aux :: Mano -> Mazo -> Mano -> String -> Int -> Int -> IO (Maybe (Mano, Mano, Int))
+accion_aux mano mazo mano2 id dinero apuesta
+    | valor mano > 21 = return Nothing
+    | otherwise       =
+                      do
+                      putStrLn $ "Ingrese una accion:"
+                      putStrLn $ "1. Hit"
+                      
+                      a <- getLine
+                      case a of "1" -> do
+                                       let (Mitad _ izq der) = mazo
+                                       choice <- pedirLado id False
+                                       let Just (mazoRes, manoRes) = robar mazo mano choice
+                                    --    if choice == Izquierdo
+                                    --    then let (Mano botada) = aplanar der
+                                    --    else let (Mano botada) = aplanar izq
+                                       mostrarMano id manoRes
+                                       if valor manoRes > 21
+                                       then do
+                                           putStrLn $ "Suma " ++ show (valor manoRes) ++ ". Perdiste"
+                                           return Nothing
+                                       else accion_aux manoRes mazoRes mano2 id dinero apuesta
+                                _   -> do
+                                       putStrLn $ "Por favor, intenta de nuevo"
+                                       accion_aux mano mazo mano2 id dinero apuesta
 
+        
