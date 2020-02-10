@@ -208,32 +208,109 @@ jugar_ronda GameState {
                 bid   = a
             finalAcciones <- accion manoJugador mazoResultado n money bid
 
-            case finalAcciones of Nothing -> if nuevo_dinero < a
-                                             then do
-                                                 putStrLn $ n ++ ", no te queda dinero. es el fin del juego para ti."
-                                                 Sys.exitSuccess
-                                             else
-                                                return GameState {
-                                                        juegosJugados   = jj + 1,
-                                                        victoriasLambda = vl + 1,
-                                                        nombre          = n,
-                                                        generador       = gen,
-                                                        dinero          = nuevo_dinero,
-                                                        objetivo        = o,
-                                                        apuesta         = a
-                                                    }
-                                  _       -> do
-                                             let Just (manoFinalJugador, cartasRestantes, apuestaFinal) = finalAcciones
-                                             return GameState {
-                                                 juegosJugados   = jj,
-                                                 victoriasLambda = vl,
-                                                 nombre          = n,
-                                                 generador       = gen,
-                                                 dinero          = d,
-                                                 objetivo        = o,
-                                                 apuesta         = a
-                                                 }
-
+            case finalAcciones 
+                of Nothing -> if nuevo_dinero < a
+                              then do
+                                  putStrLn $ n ++ ", no te queda dinero. es el fin del juego para ti."
+                                  Sys.exitSuccess
+                              else
+                                 return GameState {
+                                         juegosJugados   = jj + 1,
+                                         victoriasLambda = vl + 1,
+                                         nombre          = n,
+                                         generador       = gen,
+                                         dinero          = nuevo_dinero,
+                                         objetivo        = o,
+                                         apuesta         = a
+                                     }
+                   _       -> do
+                              let Just (manoFinalJugador, cartasRestantes, apuestaFinal) = finalAcciones
+                              case (apuestaFinal) 
+                                  of money -> do 
+                                         let ganancia = apuestaFinal + a * 2
+                                         if busted manoFinalJugador
+                                         then do
+                                              putStrLn $ "Suma" ++ show (valor manoFinalJugador) ++ ". Perdiste"
+                                              return GameState {
+                                                  juegosJugados   = jj + 1,
+                                                  victoriasLambda = vl + 1,
+                                                  nombre          = n,
+                                                  generador       = gen,
+                                                  dinero          = apuestaFinal,
+                                                  objetivo        = o,
+                                                  apuesta         = a
+                                              }
+                                         else do
+                                              putStrLn $ "Es mi turno ahora."
+                                              let Just manoFinalJack = jugarLambda (desdeMano cartasRestantes) (Mano manoJack)
+                                              putStrLn $ "Mi mano es " ++ show manoFinalJack
+                                              putStrLn $ "Suma " ++ show (valor manoFinalJack)
+                                              if ganador manoFinalJack manoFinalJugador == Dealer
+                                              then do
+                                                  putStrLn $ "Yo gano"
+                                                  return GameState {
+                                                      juegosJugados   = jj + 1,
+                                                      victoriasLambda = vl + 1,
+                                                      nombre          = n,
+                                                      generador       = gen,
+                                                      dinero          = apuestaFinal,
+                                                      objetivo        = o,
+                                                      apuesta         = a
+                                                  }
+                                              else do     
+                                                  putStrLn $ n ++ ", me has ganado"
+                                                  return GameState {
+                                                      juegosJugados   = jj + 1,
+                                                      victoriasLambda = vl + 1,
+                                                      nombre          = n,
+                                                      generador       = gen,
+                                                      dinero          = ganancia,
+                                                      objetivo        = o,
+                                                      apuesta         = a
+                                                  }
+                                --   of _ -> do
+                                --          let ganancia = apuesta * 4
+                                --          if busted manoFinalJugador
+                                --          then do
+                                --               putStrLn $ "Suma" ++ valor manoFinalJugador ++ ". Perdiste"
+                                --               return gameState {
+                                --                   juegosJugados   = jj + 1,
+                                --                   victoriasLambda = vl + 1,
+                                --                   nombre          = n,
+                                --                   generador       = gen,
+                                --                   dinero          = apuestaFinal,
+                                --                   objetivo        = o,
+                                --                   apuesta         = a
+                                --               }
+                                --          else do
+                                --               putStrLn $ "Es mi turno ahora."
+                                --               let Just manoFinalJack = jugarLambda (desdeMano cartasRestantes) manoJack
+                                --               putStrLn $ "Mi mano es " ++ show manoFinalJack
+                                --               putStrLn $ "Suma " ++ show (valor manoFinalJack)
+                                --               if ganador manoFinalJack manoFinalJugador == Dealer
+                                --               then do
+                                --                   putStrLn $ "Yo gano"
+                                --                   return GameState {
+                                --                       juegosJugados   = jj + 1,
+                                --                       victoriasLambda = vl + 1,
+                                --                       nombre          = n,
+                                --                       generador       = gen,
+                                --                       dinero          = apuestaFinal,
+                                --                       objetivo        = o,
+                                --                       apuesta         = a
+                                --                   }
+                                --               else do     
+                                --                   putStrLn $ n ++ ", me has ganado"
+                                --                   return GameState {
+                                --                       juegosJugados   = jj + 1,
+                                --                       victoriasLambda = vl + 1,
+                                --                       nombre          = n,
+                                --                       generador       = gen,
+                                --                       dinero          = apuestaFinal + ganancia,
+                                --                       objetivo        = o,
+                                --                       apuesta         = a
+                                --                  }
+    
 
 pedirLado :: String -> Bool -> IO Eleccion
 pedirLado n True
@@ -257,32 +334,56 @@ mostrarMano :: String -> Mano -> IO ()
 mostrarMano n (Mano cartas) = putStrLn $ n ++ ", tu mano es " ++ show cartas
 
 accion :: Mano -> Mazo -> String -> Int -> Int -> IO (Maybe (Mano, Mano, Int))
-accion mano mazo id dinero apuesta = accion_aux mano mazo (Mano []) id dinero apuesta
+accion mano mazo id dinero apuesta = accion_aux mano mazo (aplanar mazo) id dinero apuesta
 
 accion_aux :: Mano -> Mazo -> Mano -> String -> Int -> Int -> IO (Maybe (Mano, Mano, Int))
-accion_aux mano mazo mano2 id dinero apuesta
+accion_aux mano mazo (Mano restantes) id dinero apuesta
     | valor mano > 21 = return Nothing
     | otherwise       =
                       do
                       putStrLn $ "Ingrese una accion:"
                       putStrLn $ "1. Hit"
+                      putStrLn $ "2. Stand"
+                      if dinero > apuesta
+                      then putStrLn $ "3. Double Down"
+                      else putStr $ "3. surrender"
+                      if dinero <= apuesta
+                      then putStr $ ""
+                      else putStrLn $ "4. surrender"
+
                       
                       a <- getLine
                       case a of "1" -> do
-                                       let (Mitad _ izq der) = mazo
                                        choice <- pedirLado id False
-                                       let Just (mazoRes, manoRes) = robar mazo mano choice
-                                    --    if choice == Izquierdo
-                                    --    then let (Mano botada) = aplanar der
-                                    --    else let (Mano botada) = aplanar izq
-                                       mostrarMano id manoRes
-                                       if valor manoRes > 21
+                                       let Just (mazoRes, Mano manoRes) = robar mazo mano choice
+                                       let nuevasRestantes = [x | x <- restantes, x `notElem` manoRes]
+                                       mostrarMano id (Mano manoRes)
+                                       if valor (Mano manoRes) > 21
                                        then do
-                                           putStrLn $ "Suma " ++ show (valor manoRes) ++ ". Perdiste"
+                                           putStrLn $ "Suma " ++ show (valor (Mano manoRes)) ++ ". Perdiste"
                                            return Nothing
-                                       else accion_aux manoRes mazoRes mano2 id dinero apuesta
+                                       else accion_aux (Mano manoRes) mazoRes (Mano nuevasRestantes) id dinero apuesta
+                                "2" -> return (Just (mano, (Mano restantes), dinero))
+                                "3" -> do
+                                       if dinero > apuesta
+                                       then do
+                                            choice <- pedirLado id False
+                                            let Just (mazoRes, Mano manoRes) = robar mazo mano choice
+                                            let nuevasRestantes = [x | x <- restantes, x `notElem` manoRes]
+                                            mostrarMano id (Mano manoRes)
+                                            return (Just ((Mano manoRes), (Mano nuevasRestantes), dinero - apuesta))
+                                       else do
+                                            putStrLn $ "Jugador, te has rendido. Yo gano."
+                                            return Nothing
+                                "4" -> if dinero > apuesta
+                                       then do
+                                            putStrLn $ "Jugador, te has rendido. Yo gano."
+                                            return Nothing
+                                       else do
+                                           putStrLn $ "Por favor, intenta de nuevo"
+                                           accion_aux mano mazo (Mano restantes) id dinero apuesta
                                 _   -> do
                                        putStrLn $ "Por favor, intenta de nuevo"
-                                       accion_aux mano mazo mano2 id dinero apuesta
+                                       accion_aux mano mazo (Mano restantes) id dinero apuesta
 
         

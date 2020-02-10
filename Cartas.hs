@@ -2,6 +2,7 @@ module Cartas (
     Mano (..),
     Eleccion (..),
     Mazo (..),
+    Jugador (..),
     vacia,
     baraja,
     cantidad_cartas,
@@ -69,6 +70,11 @@ instance Eq Carta where
     Carta paloA rangoA == Carta paloB rangoB = (paloA == paloB) && (rangoA == rangoB)
 
 data Jugador = Dealer | Player
+
+instance Eq Jugador where
+    Dealer == Dealer = True
+    Player == Player = True
+    _ == _           = False
 
 instance Show Jugador where
     show Dealer = "Dealer"
